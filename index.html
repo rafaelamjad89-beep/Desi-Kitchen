@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
+<meta name="theme-color" content="#141414"/>
+<meta name="description" content="Plan your weekly Pakistani meals with recipes, ingredients, and grocery lists."/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Desi Kitchen"/>
+<link rel="manifest" href="manifest.json"/>
+<title>Desi Kitchen</title>
+<style>*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}::-webkit-scrollbar{display:none}body{background:#0a0a0a}input:focus,textarea:focus,select:focus{border-color:#E8B94A !important}input::placeholder,textarea::placeholder{color:#444}</style>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+const DEFAULT_DISHES = [
+  { id: 1, name: "Chicken Biryani", category: "Rice", time: "60 min", servings: 4, spiceLevel: 3, emoji: "🍚", desc: "Aromatic basmati rice layered with spiced chicken, saffron, and crispy onions.", ingredients: [{ item: "Basmati Rice", qty: "2 cups", aisle: "Grains" },{ item: "Chicken (bone-in)", qty: "1 kg", aisle: "Meat" },{ item: "Yogurt", qty: "1 cup", aisle: "Dairy" },{ item: "Onions", qty: "3 large", aisle: "Produce" },{ item: "Tomatoes", qty: "2 medium", aisle: "Produce" },{ item: "Green Chilies", qty: "4", aisle: "Produce" },{ item: "Ginger-Garlic Paste", qty: "2 tbsp", aisle: "Spices" },{ item: "Biryani Masala", qty: "2 tbsp", aisle: "Spices" },{ item: "Saffron Strands", qty: "A pinch", aisle: "Spices" },{ item: "Cooking Oil", qty: "½ cup", aisle: "Pantry" },{ item: "Fresh Mint", qty: "½ cup", aisle: "Produce" },{ item: "Fresh Coriander", qty: "½ cup", aisle: "Produce" }], steps: ["Marinate chicken with yogurt, biryani masala, ginger-garlic paste, salt, and half the fried onions for 1 hour.","Soak basmati rice for 30 minutes, then parboil with whole spices until 70% done. Drain.","Fry sliced onions until deep golden brown. Set aside for layering.","In a heavy pot, layer the marinated chicken at the bottom.","Add a layer of parboiled rice on top. Sprinkle saffron milk, fried onions, mint, and coriander.","Seal the pot with foil and a tight lid. Cook on high for 5 min, then low for 25 min.","Let it rest for 10 minutes. Gently mix and serve with raita."] },
+  { id: 2, name: "Nihari", category: "Curry", time: "4 hrs", servings: 6, spiceLevel: 3, emoji: "🥩", desc: "Slow-cooked beef stew rich with bone marrow and aromatic spices — a Mughlai classic.", ingredients: [{ item: "Beef Shank (bone-in)", qty: "1 kg", aisle: "Meat" },{ item: "Nihari Masala", qty: "3 tbsp", aisle: "Spices" },{ item: "Wheat Flour", qty: "2 tbsp", aisle: "Grains" },{ item: "Onions", qty: "2 large", aisle: "Produce" },{ item: "Ginger-Garlic Paste", qty: "2 tbsp", aisle: "Spices" },{ item: "Cooking Oil / Ghee", qty: "½ cup", aisle: "Pantry" },{ item: "Fresh Ginger (julienned)", qty: "2 inch", aisle: "Produce" },{ item: "Green Chilies", qty: "4", aisle: "Produce" },{ item: "Fresh Coriander", qty: "¼ cup", aisle: "Produce" },{ item: "Lemon", qty: "2", aisle: "Produce" },{ item: "Naan Bread", qty: "For serving", aisle: "Bakery" }], steps: ["Heat oil/ghee in a large pot. Fry onions until deep golden brown.","Add ginger-garlic paste and fry for 2 minutes until fragrant.","Add beef shank pieces and sear on all sides until browned.","Add nihari masala, salt, and enough water to cover meat by 2 inches.","Bring to a boil, then reduce heat to lowest. Cover and simmer for 3-4 hours.","Mix wheat flour with water to make a slurry. Stir into the pot to thicken.","Garnish with julienned ginger, chilies, coriander, and lemon. Serve with naan."] },
+  { id: 3, name: "Palak Paneer", category: "Vegetarian", time: "35 min", servings: 4, spiceLevel: 1, emoji: "🧀", desc: "Creamy spinach curry with soft paneer cubes — comfort food at its finest.", ingredients: [{ item: "Spinach (fresh)", qty: "500g", aisle: "Produce" },{ item: "Paneer", qty: "250g", aisle: "Dairy" },{ item: "Onion", qty: "1 large", aisle: "Produce" },{ item: "Tomatoes", qty: "2 medium", aisle: "Produce" },{ item: "Green Chilies", qty: "2", aisle: "Produce" },{ item: "Ginger-Garlic Paste", qty: "1 tbsp", aisle: "Spices" },{ item: "Cumin Seeds", qty: "1 tsp", aisle: "Spices" },{ item: "Cream", qty: "2 tbsp", aisle: "Dairy" },{ item: "Butter / Ghee", qty: "2 tbsp", aisle: "Dairy" }], steps: ["Blanch spinach in boiling water for 2 min. Transfer to ice water. Blend smooth.","Cut paneer into cubes and lightly fry until golden. Set aside.","Heat butter. Add cumin seeds and let them splutter.","Add chopped onions until translucent. Add ginger-garlic paste.","Add chopped tomatoes and green chilies. Cook until soft.","Pour in spinach puree. Add salt, garam masala, simmer 10 min.","Add paneer cubes and cream. Cook 5 more minutes. Serve with roti."] },
+  { id: 4, name: "Chapli Kebab", category: "BBQ", time: "30 min", servings: 4, spiceLevel: 2, emoji: "🥘", desc: "Peshawari-style spiced beef patties with tomatoes and pomegranate seeds.", ingredients: [{ item: "Beef Mince", qty: "500g", aisle: "Meat" },{ item: "Onion", qty: "1 large", aisle: "Produce" },{ item: "Tomato", qty: "1", aisle: "Produce" },{ item: "Green Chilies", qty: "4", aisle: "Produce" },{ item: "Fresh Coriander", qty: "¼ cup", aisle: "Produce" },{ item: "Pomegranate Seeds", qty: "2 tbsp", aisle: "Produce" },{ item: "Cumin Seeds", qty: "1 tbsp", aisle: "Spices" },{ item: "Coriander Seeds", qty: "1 tbsp", aisle: "Spices" },{ item: "Egg", qty: "1", aisle: "Dairy" },{ item: "Cooking Oil", qty: "For frying", aisle: "Pantry" }], steps: ["Mix beef mince with chopped onion, tomato, chilies, coriander, and egg.","Add cumin, crushed coriander seeds, salt, and chili flakes. Mix well.","Add pomegranate seeds and gently fold in.","Shape into flat patties about ½ inch thick.","Shallow fry on medium heat for 4-5 min each side.","Serve with naan, chutney, and sliced onions."] },
+  { id: 5, name: "Haleem", category: "Curry", time: "3 hrs", servings: 6, spiceLevel: 2, emoji: "🫕", desc: "Slow-cooked lentil and meat stew — thick, hearty, with ghee tempering.", ingredients: [{ item: "Beef / Mutton", qty: "500g", aisle: "Meat" },{ item: "Mixed Daal", qty: "1 cup", aisle: "Grains" },{ item: "Wheat (dalia)", qty: "½ cup", aisle: "Grains" },{ item: "Barley", qty: "¼ cup", aisle: "Grains" },{ item: "Onions", qty: "3 large", aisle: "Produce" },{ item: "Ginger-Garlic Paste", qty: "2 tbsp", aisle: "Spices" },{ item: "Haleem Masala", qty: "2 tbsp", aisle: "Spices" },{ item: "Ghee", qty: "3 tbsp", aisle: "Pantry" },{ item: "Lemon", qty: "2", aisle: "Produce" },{ item: "Fresh Ginger", qty: "For garnish", aisle: "Produce" },{ item: "Mint & Coriander", qty: "For garnish", aisle: "Produce" }], steps: ["Soak lentils, wheat, and barley overnight.","Pressure cook meat with spices until very tender.","Boil grains and lentils until completely mushy.","Shred meat and combine with lentil mixture.","Mash into thick porridge-like consistency.","Simmer 30 min, stirring frequently.","Top with ghee tarka, fried onions, ginger, mint, lemon."] },
+  { id: 6, name: "Daal Chawal", category: "Vegetarian", time: "40 min", servings: 4, spiceLevel: 1, emoji: "🍛", desc: "Simple comforting yellow lentils with steamed rice — the everyday staple.", ingredients: [{ item: "Masoor Daal", qty: "1 cup", aisle: "Grains" },{ item: "Basmati Rice", qty: "2 cups", aisle: "Grains" },{ item: "Onion", qty: "1 medium", aisle: "Produce" },{ item: "Tomato", qty: "1 medium", aisle: "Produce" },{ item: "Turmeric", qty: "½ tsp", aisle: "Spices" },{ item: "Red Chili Powder", qty: "½ tsp", aisle: "Spices" },{ item: "Cumin Seeds", qty: "1 tsp", aisle: "Spices" },{ item: "Garlic", qty: "4 cloves", aisle: "Produce" },{ item: "Ghee / Butter", qty: "2 tbsp", aisle: "Pantry" }], steps: ["Wash and soak lentils for 15 minutes.","Boil lentils with turmeric and salt until creamy.","Cook basmati rice separately.","Heat ghee, add cumin seeds, then garlic until golden.","Add onion, tomato, and red chili powder.","Pour tadka into daal. Simmer 5 minutes.","Serve over rice with coriander and achaar."] },
+  { id: 7, name: "Seekh Kebab", category: "BBQ", time: "25 min", servings: 4, spiceLevel: 2, emoji: "🔥", desc: "Juicy spiced ground meat skewers — the king of Pakistani BBQ.", ingredients: [{ item: "Beef / Lamb Mince", qty: "500g", aisle: "Meat" },{ item: "Onion (grated)", qty: "1 small", aisle: "Produce" },{ item: "Green Chilies", qty: "4", aisle: "Produce" },{ item: "Fresh Coriander", qty: "¼ cup", aisle: "Produce" },{ item: "Ginger-Garlic Paste", qty: "1 tbsp", aisle: "Spices" },{ item: "Cumin Powder", qty: "1 tsp", aisle: "Spices" },{ item: "Garam Masala", qty: "1 tsp", aisle: "Spices" },{ item: "Skewers", qty: "8", aisle: "Pantry" }], steps: ["Combine mince with grated onion, chilies, and coriander.","Add spices and ginger-garlic paste. Mix well.","Knead 5 minutes until sticky.","Refrigerate 30 minutes.","Mold onto skewers, pressing firmly.","Grill turning every 2 min until charred.","Serve with mint chutney and naan."] },
+  { id: 8, name: "Karahi Chicken", category: "Curry", time: "35 min", servings: 4, spiceLevel: 3, emoji: "🍗", desc: "Quick-cooked chicken in a tomato-ginger karahi — bold and utterly delicious.", ingredients: [{ item: "Chicken (bone-in)", qty: "1 kg", aisle: "Meat" },{ item: "Tomatoes", qty: "4 large", aisle: "Produce" },{ item: "Fresh Ginger", qty: "3 inch", aisle: "Produce" },{ item: "Garlic", qty: "8 cloves", aisle: "Produce" },{ item: "Green Chilies", qty: "6", aisle: "Produce" },{ item: "Oil / Ghee", qty: "½ cup", aisle: "Pantry" },{ item: "Coriander Powder", qty: "1 tbsp", aisle: "Spices" },{ item: "Red Chili Flakes", qty: "1 tsp", aisle: "Spices" },{ item: "Garam Masala", qty: "1 tsp", aisle: "Spices" }], steps: ["Heat oil in a karahi on high heat.","Add garlic and half the ginger. Fry 30 seconds.","Add chicken and sear all sides.","Add tomatoes, salt, coriander powder, chili flakes.","Cook on high until tomatoes break down and oil separates.","Add remaining ginger, chilies, garam masala.","Cook 5 more minutes. Serve sizzling with naan."] },
+  { id: 9, name: "Aloo Gosht", category: "Curry", time: "50 min", servings: 4, spiceLevel: 2, emoji: "🥔", desc: "Tender meat and potato curry in rich tomato-onion gravy.", ingredients: [{ item: "Mutton / Beef", qty: "500g", aisle: "Meat" },{ item: "Potatoes", qty: "3 medium", aisle: "Produce" },{ item: "Onions", qty: "2 large", aisle: "Produce" },{ item: "Tomatoes", qty: "3 medium", aisle: "Produce" },{ item: "Yogurt", qty: "½ cup", aisle: "Dairy" },{ item: "Ginger-Garlic Paste", qty: "1.5 tbsp", aisle: "Spices" },{ item: "Red Chili Powder", qty: "1 tsp", aisle: "Spices" },{ item: "Turmeric", qty: "½ tsp", aisle: "Spices" },{ item: "Cooking Oil", qty: "¼ cup", aisle: "Pantry" }], steps: ["Fry onions until golden brown.","Add ginger-garlic paste, cook 1 minute.","Sear meat on high heat for 5 minutes.","Add yogurt, turmeric, chili, coriander powder.","Add tomatoes. Cook on low until meat is tender.","Add potatoes. Cook until soft.","Garnish with chilies and coriander. Serve with roti."] },
+  { id: 10, name: "Gulab Jamun", category: "Dessert", time: "45 min", servings: 6, spiceLevel: 0, emoji: "🍯", desc: "Soft milk-solid dumplings soaked in rose-cardamom sugar syrup.", ingredients: [{ item: "Milk Powder", qty: "1 cup", aisle: "Dairy" },{ item: "All-Purpose Flour", qty: "¼ cup", aisle: "Grains" },{ item: "Baking Soda", qty: "A pinch", aisle: "Pantry" },{ item: "Ghee (melted)", qty: "2 tbsp", aisle: "Pantry" },{ item: "Milk (warm)", qty: "3-4 tbsp", aisle: "Dairy" },{ item: "Sugar", qty: "1.5 cups", aisle: "Pantry" },{ item: "Cardamom Pods", qty: "3", aisle: "Spices" },{ item: "Rose Water", qty: "1 tsp", aisle: "Spices" },{ item: "Cooking Oil", qty: "For frying", aisle: "Pantry" }], steps: ["Boil sugar, water, cardamom. Add rose water. Set aside.","Mix milk powder, flour, baking soda.","Add ghee and warm milk to form soft dough.","Rest 10 min. Shape into smooth balls.","Fry on LOW heat until deep golden (8-10 min).","Transfer to warm syrup. Soak 30 min.","Serve warm — they puff up as they absorb syrup."] }
+];
+
+const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+const CATEGORIES = ["All","Rice","Curry","Vegetarian","BBQ","Dessert"];
+const AISLES = ["Produce","Meat","Dairy","Spices","Grains","Pantry","Bakery"];
+const EMOJIS = ["🍚","🥩","🧀","🥘","🫕","🍛","🔥","🥔","🍗","🍯","🧆","🥙","🍲","🫓","🥣","🍜","🥗","🍖","🧈","🫔"];
+const F = { h: "'Baloo 2', cursive", b: "'Nunito', sans-serif" };
+const AC = { Meat:"#E74C3C", Produce:"#2ECC71", Spices:"#F39C12", Grains:"#D4A017", Dairy:"#3498DB", Pantry:"#95A5A6", Bakery:"#E67E22" };
+
+const Spice = ({ level }) => <div style={{display:"flex",gap:2,alignItems:"center"}}>{[1,2,3].map(i=><span key={i} style={{fontSize:10,opacity:i<=level?1:0.2}}>🌶️</span>)}</div>;
+
+const App = function App() {
+  const [dishes, setDishes] = useState(DEFAULT_DISHES);
+  const [screen, setScreen] = useState("home");
+  const [cat, setCat] = useState("All");
+  const [plan, setPlan] = useState({});
+  const [sel, setSel] = useState(null);
+  const [planDay, setPlanDay] = useState(null);
+  const [grocExp, setGrocExp] = useState({});
+  const [tab, setTab] = useState("ingredients");
+  const [anim, setAnim] = useState(false);
+  const [fn, setFn] = useState(""); const [fc, setFc] = useState("Curry"); const [ft, setFt] = useState("");
+  const [fs, setFs] = useState("4"); const [fsp, setFsp] = useState(2); const [fe, setFe] = useState("🍲");
+  const [fd, setFd] = useState(""); const [fi, setFi] = useState([{item:"",qty:"",aisle:"Produce"}]);
+  const [fst, setFst] = useState([""]); const [showEP, setShowEP] = useState(false); const [editId, setEditId] = useState(null);
+
+  useEffect(() => { setAnim(true); const t = setTimeout(() => setAnim(false), 300); return () => clearTimeout(t); }, [screen]);
+
+  const filtered = cat === "All" ? dishes : dishes.filter(d => d.category === cat);
+  const go = (s) => setScreen(s);
+
+  const assignDish = (dish) => { if(planDay){setPlan(p=>({...p,[planDay]:dish}));setPlanDay(null);go("plan");} };
+  const autoFill = () => { const s=[...dishes].sort(()=>Math.random()-0.5); const p={}; DAYS.forEach((d,i)=>{p[d]=s[i%s.length];}); setPlan(p); };
+
+  const groceryList = () => {
+    const items = {}; Object.values(plan).forEach(d => { if(d) d.ingredients.forEach(ing => { const k=ing.item; if(!items[k]) items[k]={...ing,dishes:[d.name]}; else items[k].dishes.push(d.name); }); });
+    const g = {}; Object.values(items).forEach(item => { if(!g[item.aisle]) g[item.aisle]=[]; g[item.aisle].push(item); }); return g;
+  };
+
+  const resetForm = () => { setFn("");setFc("Curry");setFt("");setFs("4");setFsp(2);setFe("🍲");setFd("");setFi([{item:"",qty:"",aisle:"Produce"}]);setFst([""]);setEditId(null);setShowEP(false); };
+  const openAdd = () => { resetForm(); go("add"); };
+  const openEdit = (d) => { setFn(d.name);setFc(d.category);setFt(d.time);setFs(""+d.servings);setFsp(d.spiceLevel);setFe(d.emoji);setFd(d.desc);setFi(d.ingredients.map(i=>({...i})));setFst([...d.steps]);setEditId(d.id);go("add"); };
+
+  const saveDish = () => {
+    if(!fn.trim()||!ft.trim()) return;
+    const vi=fi.filter(i=>i.item.trim()), vs=fst.filter(s=>s.trim());
+    if(!vi.length||!vs.length) return;
+    const dish = {id:editId||Date.now(),name:fn.trim(),category:fc,time:ft.trim(),servings:parseInt(fs)||4,spiceLevel:fsp,emoji:fe,desc:fd.trim(),ingredients:vi,steps:vs};
+    if(editId) setDishes(p=>p.map(d=>d.id===editId?dish:d)); else setDishes(p=>[...p,dish]);
+    resetForm(); go("home");
+  };
+  const delDish = (id) => { setDishes(p=>p.filter(d=>d.id!==id)); go("home"); };
+
+  const IS = { width:"100%",padding:"12px 14px",background:"#1e1e1e",border:"1px solid #333",borderRadius:12,color:"#f0ece2",fontFamily:F.b,fontSize:14,outline:"none",transition:"border-color 0.2s" };
+  const LS = { fontFamily:F.b,fontSize:12,color:"#888",fontWeight:700,letterSpacing:"0.05em",textTransform:"uppercase",marginBottom:6,display:"block" };
+
+  const Nav = () => (
+    <div style={{position:"fixed",bottom:0,left:0,right:0,background:"rgba(20,20,20,0.95)",borderTop:"1px solid #2a2a2a",display:"flex",justifyContent:"space-around",padding:"6px 0 20px",zIndex:100,maxWidth:480,margin:"0 auto",backdropFilter:"blur(16px)"}}>
+      {[{id:"home",icon:"⬡",label:"Discover"},{id:"plan",icon:"▦",label:"Meal Plan"},{id:"grocery",icon:"◉",label:"Grocery"},{id:"add",icon:"＋",label:"Add Dish",action:openAdd}].map(t=>(
+        <button key={t.id} onClick={()=>t.action?t.action():go(t.id)} style={{background:"none",border:"none",display:"flex",flexDirection:"column",alignItems:"center",gap:2,cursor:"pointer",padding:"4px 12px",color:screen===t.id?"#E8B94A":"#666",transition:"color 0.2s"}}>
+          <span style={{fontSize:t.id==="add"?22:20,lineHeight:1}}>{t.icon}</span>
+          <span style={{fontSize:10,fontFamily:F.b,fontWeight:screen===t.id?800:600}}>{t.label}</span>
+        </button>
+      ))}
+    </div>
+  );
+
+  const Card = ({dish,compact,onTap}) => (
+    <div onClick={()=>onTap?onTap(dish):(setSel(dish),setTab("ingredients"),go("detail"))}
+      style={{background:"#1e1e1e",borderRadius:18,overflow:"hidden",cursor:"pointer",transition:"transform 0.2s",width:compact?"100%":undefined,display:compact?"flex":undefined,alignItems:compact?"center":undefined}}>
+      <div style={{width:compact?76:"100%",height:compact?76:175,minWidth:compact?76:undefined,background:"linear-gradient(135deg,#2a2a2a,#1a1a1a)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:compact?30:54,borderRadius:compact?"18px 0 0 18px":"18px 18px 0 0",position:"relative"}}>
+        <div style={{position:"absolute",inset:0,background:"radial-gradient(circle at 30% 40%,rgba(232,185,74,0.07),transparent 70%)"}}/>
+        <span style={{position:"relative",zIndex:1}}>{dish.emoji}</span>
+      </div>
+      <div style={{padding:compact?"8px 14px":"14px 18px",flex:compact?1:undefined}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+          <h3 style={{fontFamily:F.h,color:"#f0ece2",fontSize:compact?15:19,margin:0,fontWeight:700,lineHeight:1.2}}>{dish.name}</h3>
+          {!compact&&<Spice level={dish.spiceLevel}/>}
+        </div>
+        {!compact&&<p style={{fontFamily:F.b,color:"#888",fontSize:12,margin:"6px 0 10px",lineHeight:1.5}}>{dish.desc}</p>}
+        <div style={{display:"flex",gap:10,alignItems:"center"}}>
+          <span style={{fontFamily:F.b,fontSize:11,color:"#E8B94A",fontWeight:700}}>{dish.time}</span>
+          <span style={{color:"#333"}}>·</span>
+          <span style={{fontFamily:F.b,fontSize:11,color:"#666",fontWeight:600}}>{dish.servings} servings</span>
+          {compact&&<Spice level={dish.spiceLevel}/>}
+        </div>
+      </div>
+    </div>
+  );
+
+  const Home = () => (
+    <div style={{paddingBottom:80}}>
+      <div style={{padding:"48px 20px 16px",position:"relative"}}>
+        <div style={{position:"absolute",top:20,right:20,width:100,height:100,borderRadius:"50%",background:"radial-gradient(circle,rgba(232,185,74,0.1),transparent)",filter:"blur(20px)"}}/>
+        <p style={{fontFamily:F.b,color:"#E8B94A",fontSize:11,letterSpacing:"0.2em",textTransform:"uppercase",margin:"0 0 6px",fontWeight:800}}>Pakistani Kitchen</p>
+        <h1 style={{fontFamily:F.h,color:"#f0ece2",fontSize:30,margin:0,fontWeight:800,lineHeight:1.15}}>What shall we<br/>cook today? 🍳</h1>
+      </div>
+      <div style={{display:"flex",gap:8,padding:"0 20px",overflowX:"auto",scrollbarWidth:"none"}}>
+        {CATEGORIES.map(c=><button key={c} onClick={()=>setCat(c)} style={{padding:"8px 18px",borderRadius:100,border:"1.5px solid",borderColor:cat===c?"#E8B94A":"#333",background:cat===c?"rgba(232,185,74,0.12)":"transparent",color:cat===c?"#E8B94A":"#777",fontFamily:F.b,fontSize:13,cursor:"pointer",whiteSpace:"nowrap",fontWeight:700}}>{c}</button>)}
+      </div>
+      <div style={{padding:"16px 20px",display:"grid",gap:14}}>
+        {filtered.length>0&&<Card dish={filtered[0]} onTap={planDay?assignDish:undefined}/>}
+        {filtered.slice(1).map(d=><Card key={d.id} dish={d} compact onTap={planDay?assignDish:undefined}/>)}
+        {filtered.length===0&&<div style={{padding:"40px 0",textAlign:"center"}}><span style={{fontSize:40}}>🫙</span><p style={{fontFamily:F.b,color:"#666",fontSize:14,marginTop:12,fontWeight:600}}>No dishes here yet. Tap <strong>+ Add Dish</strong>!</p></div>}
+      </div>
+      {planDay&&<div style={{position:"fixed",top:0,left:0,right:0,background:"rgba(232,185,74,0.1)",padding:"48px 20px 12px",zIndex:50,borderBottom:"1px solid rgba(232,185,74,0.25)",maxWidth:480,margin:"0 auto",backdropFilter:"blur(12px)"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <p style={{fontFamily:F.b,color:"#E8B94A",fontSize:13,margin:0,fontWeight:700}}>🗓️ Picking for <strong>{planDay}</strong> — tap any dish!</p>
+          <button onClick={()=>setPlanDay(null)} style={{background:"none",border:"1px solid rgba(232,185,74,0.3)",borderRadius:8,color:"#E8B94A",padding:"4px 10px",fontFamily:F.b,fontSize:11,cursor:"pointer",fontWeight:700}}>Cancel</button>
+        </div>
+      </div>}
+    </div>
+  );
+
+  const Plan = () => (
+    <div style={{paddingBottom:80}}>
+      <div style={{padding:"48px 20px 12px"}}>
+        <p style={{fontFamily:F.b,color:"#E8B94A",fontSize:11,letterSpacing:"0.2em",textTransform:"uppercase",margin:"0 0 6px",fontWeight:800}}>Weekly</p>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <h1 style={{fontFamily:F.h,color:"#f0ece2",fontSize:26,margin:0,fontWeight:800}}>Meal Plan 📋</h1>
+          <button onClick={autoFill} style={{background:"rgba(232,185,74,0.12)",border:"1.5px solid rgba(232,185,74,0.3)",color:"#E8B94A",padding:"8px 16px",borderRadius:100,fontFamily:F.b,fontSize:12,cursor:"pointer",fontWeight:700}}>✦ Auto-fill</button>
+        </div>
+      </div>
+      <div style={{padding:"12px 20px",display:"grid",gap:8}}>
+        {DAYS.map(day=>{const d=plan[day];return(
+          <div key={day} style={{display:"flex",alignItems:"center",gap:14,background:"#1e1e1e",borderRadius:14,padding:"12px 16px",border:"1px solid #2a2a2a"}}>
+            <div style={{minWidth:36,textAlign:"center"}}><span style={{fontFamily:F.b,fontSize:10,color:"#666",textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:800}}>{day.slice(0,3)}</span></div>
+            <div style={{width:1,height:32,background:"#2a2a2a"}}/>
+            {d?(
+              <div style={{flex:1,display:"flex",alignItems:"center",gap:10,cursor:"pointer"}} onClick={()=>{setSel(d);setTab("ingredients");go("detail");}}>
+                <span style={{fontSize:24}}>{d.emoji}</span>
+                <div><p style={{fontFamily:F.h,color:"#f0ece2",fontSize:14,margin:0,fontWeight:700}}>{d.name}</p><p style={{fontFamily:F.b,color:"#666",fontSize:11,margin:"2px 0 0",fontWeight:600}}>{d.time} · {d.category}</p></div>
+              </div>
+            ):(
+              <button onClick={()=>{setPlanDay(day);go("home");}} style={{flex:1,background:"none",border:"1.5px dashed #333",borderRadius:10,padding:"10px",color:"#555",fontFamily:F.b,fontSize:12,fontWeight:700,cursor:"pointer",textAlign:"left"}}>+ Add a dish</button>
+            )}
+            {d&&<button onClick={e=>{e.stopPropagation();setPlan(p=>{const n={...p};delete n[day];return n;});}} style={{background:"none",border:"none",color:"#444",cursor:"pointer",fontSize:16,padding:4}}>×</button>}
+          </div>
+        );})}
+      </div>
+    </div>
+  );
+
+  const Grocery = () => {
+    const g=groceryList(), a=Object.keys(g);
+    return(
+      <div style={{paddingBottom:80}}>
+        <div style={{padding:"48px 20px 12px"}}><p style={{fontFamily:F.b,color:"#E8B94A",fontSize:11,letterSpacing:"0.2em",textTransform:"uppercase",margin:"0 0 6px",fontWeight:800}}>Shopping</p><h1 style={{fontFamily:F.h,color:"#f0ece2",fontSize:26,margin:0,fontWeight:800}}>Grocery List 🛒</h1></div>
+        {a.length===0?(<div style={{padding:"60px 20px",textAlign:"center"}}><span style={{fontSize:48,display:"block",marginBottom:16}}>🛒</span><p style={{fontFamily:F.b,color:"#666",fontSize:14,fontWeight:600}}>Add dishes to your meal plan<br/>to generate a grocery list</p></div>):(
+          <div style={{padding:"12px 20px",display:"grid",gap:8}}>
+            {a.map(aisle=>(
+              <div key={aisle} style={{background:"#1e1e1e",borderRadius:14,overflow:"hidden",border:"1px solid #2a2a2a"}}>
+                <button onClick={()=>setGrocExp(x=>({...x,[aisle]:!x[aisle]}))} style={{width:"100%",display:"flex",alignItems:"center",gap:12,padding:"14px 16px",background:"none",border:"none",cursor:"pointer"}}>
+                  <div style={{width:8,height:8,borderRadius:"50%",background:AC[aisle]||"#666"}}/>
+                  <span style={{fontFamily:F.b,color:"#f0ece2",fontSize:14,fontWeight:800,flex:1,textAlign:"left"}}>{aisle}</span>
+                  <span style={{fontFamily:F.b,color:"#555",fontSize:12,fontWeight:600}}>{g[aisle].length} items</span>
+                  <span style={{color:"#555",fontSize:12,transform:grocExp[aisle]?"rotate(90deg)":"none",transition:"transform 0.2s"}}>›</span>
+                </button>
+                {grocExp[aisle]&&<div style={{padding:"0 16px 12px"}}>{g[aisle].map((item,i)=><div key={i} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderTop:i>0?"1px solid #252525":"none"}}><span style={{fontFamily:F.b,color:"#ccc",fontSize:13,fontWeight:600}}>{item.item}</span><span style={{fontFamily:F.b,color:"#666",fontSize:12}}>{item.qty}</span></div>)}</div>}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const Detail = () => {
+    if(!sel) return null; const d=sel;
+    return(
+      <div style={{paddingBottom:80}}>
+        <div style={{position:"fixed",top:16,left:16,zIndex:60}}><button onClick={()=>go("home")} style={{background:"rgba(26,26,26,0.9)",border:"1px solid #333",borderRadius:100,width:40,height:40,color:"#f0ece2",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(10px)"}}>←</button></div>
+        <div style={{position:"fixed",top:16,right:16,zIndex:60}}><button onClick={()=>openEdit(d)} style={{background:"rgba(26,26,26,0.9)",border:"1px solid #333",borderRadius:100,width:40,height:40,color:"#E8B94A",fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(10px)",fontFamily:F.b,fontWeight:800}}>✎</button></div>
+        <div style={{height:220,background:"linear-gradient(135deg,#2a2218,#1a1a1a)",display:"flex",alignItems:"center",justifyContent:"center",position:"relative"}}>
+          <div style={{position:"absolute",inset:0,background:"radial-gradient(circle at 50% 60%,rgba(232,185,74,0.06),transparent 60%)"}}/>
+          <span style={{fontSize:80,position:"relative",zIndex:1}}>{d.emoji}</span>
+        </div>
+        <div style={{padding:"20px 20px 0"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+            <div><span style={{fontFamily:F.b,fontSize:10,letterSpacing:"0.15em",textTransform:"uppercase",color:"#E8B94A",fontWeight:800}}>{d.category}</span><h1 style={{fontFamily:F.h,color:"#f0ece2",fontSize:26,margin:"2px 0 0",fontWeight:800}}>{d.name}</h1></div>
+            <Spice level={d.spiceLevel}/>
+          </div>
+          <p style={{fontFamily:F.b,color:"#888",fontSize:13,lineHeight:1.6,margin:"10px 0 0"}}>{d.desc}</p>
+          <div style={{display:"flex",gap:20,margin:"18px 0",padding:"14px 0",borderTop:"1px solid #2a2a2a",borderBottom:"1px solid #2a2a2a"}}>
+            {[{l:"Cook Time",v:d.time},{l:"Servings",v:d.servings},{l:"Items",v:d.ingredients.length}].map((s,i)=><div key={i}><p style={{fontFamily:F.b,fontSize:10,color:"#666",margin:0,textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:700}}>{s.l}</p><p style={{fontFamily:F.h,fontSize:18,color:"#f0ece2",margin:"2px 0 0"}}>{s.v}</p></div>)}
+          </div>
+          <div style={{display:"flex",marginBottom:16}}>
+            {["ingredients","steps"].map(t=><button key={t} onClick={()=>setTab(t)} style={{flex:1,padding:"12px",background:"none",cursor:"pointer",border:"none",borderBottom:`2.5px solid ${tab===t?"#E8B94A":"#2a2a2a"}`,color:tab===t?"#E8B94A":"#666",fontFamily:F.b,fontSize:13,fontWeight:800,textTransform:"uppercase",letterSpacing:"0.08em"}}>{t}</button>)}
+          </div>
+          {tab==="ingredients"?<div>{d.ingredients.map((ing,i)=><div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"11px 0",borderBottom:i<d.ingredients.length-1?"1px solid #222":"none"}}><div style={{display:"flex",alignItems:"center",gap:10}}><div style={{width:6,height:6,borderRadius:"50%",background:AC[ing.aisle]||"#666"}}/><span style={{fontFamily:F.b,color:"#ddd",fontSize:14,fontWeight:600}}>{ing.item}</span></div><span style={{fontFamily:F.b,color:"#777",fontSize:13}}>{ing.qty}</span></div>)}</div>
+          :<div>{d.steps.map((step,i)=><div key={i} style={{display:"flex",gap:14,padding:"14px 0",borderBottom:i<d.steps.length-1?"1px solid #222":"none"}}><div style={{minWidth:28,height:28,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(232,185,74,0.1)",border:"1.5px solid rgba(232,185,74,0.2)",fontFamily:F.b,fontSize:12,color:"#E8B94A",fontWeight:800}}>{i+1}</div><p style={{fontFamily:F.b,color:"#ccc",fontSize:14,lineHeight:1.7,margin:0}}>{step}</p></div>)}</div>}
+        </div>
+      </div>
+    );
+  };
+
+  const Add = () => {
+    const ok = fn.trim()&&ft.trim()&&fi.some(i=>i.item.trim())&&fst.some(s=>s.trim());
+    return(
+      <div style={{paddingBottom:100}}>
+        <div style={{padding:"48px 20px 12px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div><p style={{fontFamily:F.b,color:"#E8B94A",fontSize:11,letterSpacing:"0.2em",textTransform:"uppercase",margin:"0 0 6px",fontWeight:800}}>{editId?"Edit":"Create New"}</p><h1 style={{fontFamily:F.h,color:"#f0ece2",fontSize:26,margin:0,fontWeight:800}}>{editId?"Edit Dish ✏️":"Add a Dish 🧑‍🍳"}</h1></div>
+          <button onClick={()=>{resetForm();go("home");}} style={{background:"none",border:"1px solid #333",borderRadius:100,width:36,height:36,color:"#888",fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+        </div>
+        <div style={{padding:"12px 20px",display:"grid",gap:18}}>
+          <div>
+            <label style={LS}>Emoji Icon</label>
+            <div style={{display:"flex",alignItems:"center",gap:12}}>
+              <button onClick={()=>setShowEP(!showEP)} style={{width:56,height:56,borderRadius:14,background:"#1e1e1e",border:"1.5px solid #333",fontSize:28,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{fe}</button>
+              <span style={{fontFamily:F.b,fontSize:12,color:"#666",fontWeight:600}}>Tap to change</span>
+            </div>
+            {showEP&&<div style={{display:"flex",flexWrap:"wrap",gap:6,marginTop:10,padding:12,background:"#1e1e1e",borderRadius:14,border:"1px solid #333"}}>{EMOJIS.map(e=><button key={e} onClick={()=>{setFe(e);setShowEP(false);}} style={{width:40,height:40,borderRadius:10,background:fe===e?"rgba(232,185,74,0.15)":"transparent",border:fe===e?"1.5px solid #E8B94A":"1px solid transparent",fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{e}</button>)}</div>}
+          </div>
+          <div><label style={LS}>Dish Name *</label><input value={fn} onChange={e=>setFn(e.target.value)} placeholder="e.g. Chicken Karahi" style={IS}/></div>
+          <div><label style={LS}>Description</label><textarea value={fd} onChange={e=>setFd(e.target.value)} placeholder="A short tasty description..." rows={2} style={{...IS,resize:"vertical",minHeight:60}}/></div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+            <div><label style={LS}>Category</label><select value={fc} onChange={e=>setFc(e.target.value)} style={{...IS,cursor:"pointer"}}>{CATEGORIES.filter(c=>c!=="All").map(c=><option key={c} value={c}>{c}</option>)}</select></div>
+            <div><label style={LS}>Cook Time *</label><input value={ft} onChange={e=>setFt(e.target.value)} placeholder="e.g. 45 min" style={IS}/></div>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+            <div><label style={LS}>Servings</label><input type="number" value={fs} onChange={e=>setFs(e.target.value)} min="1" style={IS}/></div>
+            <div><label style={LS}>Spice Level</label><div style={{display:"flex",gap:6,paddingTop:8}}>{[0,1,2,3].map(l=><button key={l} onClick={()=>setFsp(l)} style={{flex:1,padding:"10px 0",borderRadius:10,cursor:"pointer",textAlign:"center",background:fsp===l?"rgba(232,185,74,0.15)":"#1e1e1e",border:fsp===l?"1.5px solid #E8B94A":"1px solid #333",fontFamily:F.b,fontSize:12,color:fsp===l?"#E8B94A":"#666",fontWeight:700}}>{l===0?"Mild":l===1?"🌶":l===2?"🌶🌶":"🌶🌶🌶"}</button>)}</div></div>
+          </div>
+
+          <div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+              <label style={{...LS,marginBottom:0}}>Ingredients *</label>
+              <button onClick={()=>setFi(p=>[...p,{item:"",qty:"",aisle:"Produce"}])} style={{background:"rgba(232,185,74,0.1)",border:"1px solid rgba(232,185,74,0.25)",color:"#E8B94A",padding:"5px 12px",borderRadius:8,fontFamily:F.b,fontSize:11,cursor:"pointer",fontWeight:700}}>+ Add</button>
+            </div>
+            <div style={{display:"grid",gap:8}}>
+              {fi.map((ing,idx)=>(
+                <div key={idx} style={{display:"flex",gap:8,alignItems:"center"}}>
+                  <input value={ing.item} onChange={e=>{const n=[...fi];n[idx]={...n[idx],item:e.target.value};setFi(n);}} placeholder="Ingredient" style={{...IS,flex:2}}/>
+                  <input value={ing.qty} onChange={e=>{const n=[...fi];n[idx]={...n[idx],qty:e.target.value};setFi(n);}} placeholder="Qty" style={{...IS,flex:1}}/>
+                  <select value={ing.aisle} onChange={e=>{const n=[...fi];n[idx]={...n[idx],aisle:e.target.value};setFi(n);}} style={{...IS,flex:1,padding:"12px 8px",fontSize:12,cursor:"pointer"}}>{AISLES.map(a=><option key={a} value={a}>{a}</option>)}</select>
+                  {fi.length>1&&<button onClick={()=>setFi(p=>p.filter((_,i)=>i!==idx))} style={{background:"none",border:"none",color:"#555",cursor:"pointer",fontSize:18,padding:"0 4px",flexShrink:0}}>×</button>}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+              <label style={{...LS,marginBottom:0}}>Steps *</label>
+              <button onClick={()=>setFst(p=>[...p,""])} style={{background:"rgba(232,185,74,0.1)",border:"1px solid rgba(232,185,74,0.25)",color:"#E8B94A",padding:"5px 12px",borderRadius:8,fontFamily:F.b,fontSize:11,cursor:"pointer",fontWeight:700}}>+ Add</button>
+            </div>
+            <div style={{display:"grid",gap:8}}>
+              {fst.map((step,idx)=>(
+                <div key={idx} style={{display:"flex",gap:8,alignItems:"flex-start"}}>
+                  <div style={{minWidth:26,height:26,borderRadius:"50%",background:"rgba(232,185,74,0.1)",border:"1.5px solid rgba(232,185,74,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:F.b,fontSize:11,color:"#E8B94A",fontWeight:800,marginTop:10}}>{idx+1}</div>
+                  <textarea value={step} onChange={e=>{const n=[...fst];n[idx]=e.target.value;setFst(n);}} placeholder={`Step ${idx+1}...`} rows={2} style={{...IS,flex:1,resize:"vertical",minHeight:50}}/>
+                  {fst.length>1&&<button onClick={()=>setFst(p=>p.filter((_,i)=>i!==idx))} style={{background:"none",border:"none",color:"#555",cursor:"pointer",fontSize:18,padding:"0 4px",marginTop:10,flexShrink:0}}>×</button>}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{display:"flex",gap:10,paddingTop:8}}>
+            {editId&&<button onClick={()=>delDish(editId)} style={{padding:"14px 20px",borderRadius:14,border:"1.5px solid #C0392B",background:"rgba(192,57,43,0.1)",color:"#E74C3C",fontFamily:F.b,fontSize:14,fontWeight:800,cursor:"pointer"}}>Delete</button>}
+            <button onClick={saveDish} disabled={!ok} style={{flex:1,padding:"14px",borderRadius:14,border:"none",background:ok?"linear-gradient(135deg,#E8B94A,#D4A017)":"#2a2a2a",color:ok?"#141414":"#555",fontFamily:F.b,fontSize:15,fontWeight:800,cursor:ok?"pointer":"not-allowed"}}>{editId?"Save Changes":"Add Dish"} ✨</button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div style={{maxWidth:480,margin:"0 auto",minHeight:"100vh",background:"#141414",position:"relative",overflow:"hidden"}}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700;800&display=swap');
+        *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+        ::-webkit-scrollbar{display:none}
+        body{background:#0a0a0a}
+        input:focus,textarea:focus,select:focus{border-color:#E8B94A !important}
+        input::placeholder,textarea::placeholder{color:#444}
+      `}</style>
+      <div style={{opacity:anim?0:1,transform:anim?"translateY(8px)":"translateY(0)",transition:"opacity 0.3s ease,transform 0.3s ease"}}>
+        {screen==="home"&&<Home/>}
+        {screen==="plan"&&<Plan/>}
+        {screen==="grocery"&&<Grocery/>}
+        {screen==="detail"&&<Detail/>}
+        {screen==="add"&&<Add/>}
+      </div>
+      <Nav/>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+
+// Register service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
