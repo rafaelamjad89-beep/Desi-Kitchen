@@ -1,8 +1,8 @@
 {
   "files": {
-    "main.js": "/static/js/main.fda2b32d.js",
-    "index.html": "/index.html",
-    "main.fda2b32d.js.map": "/static/js/main.fda2b32d.js.map"
+    "main.js": "/desi-kitchen/static/js/main.fda2b32d.js",
+    "index.html": "/desi-kitchen/index.html",
+    "main.fda2b32d.js.map": "/desi-kitchen/static/js/main.fda2b32d.js.map"
   },
   "entrypoints": [
     "static/js/main.fda2b32d.js"
